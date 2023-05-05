@@ -293,7 +293,7 @@ def delete_word(user_grammar_id):
 
 
 @app.route('/api/Grammars/<grammar_id>', methods=['POST'])
-def post_grammar(word_id):  # Note: Public grammar ID
+def post_grammar(word_id):
     """
     Purpose: If a user wants to add a word to their library, do so with the public word id.
 
@@ -308,8 +308,31 @@ def post_grammar(word_id):  # Note: Public grammar ID
     return json.dumps({'status': 'success'})
 
 
+@app.route('/api/Grammars/', methods=['POST'])
+def new_grammar(word_id):
+    """
+    Purpose: Create a new grammar. This should be added to the users' grammar, as well as
+    go to the moderation system.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+    # Parameters
+    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+
+    description = request.get_json()['description'] #Quick description
+    searchTerm = request.get_json()['searchTerm'] #Regex search
+    language = request.get_json()['language'] #Target Language
+    from_language = request.get_json()['from_language'] #Language of link
+    link = request.get_json()['link']
+
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
 @app.route('/api/Packs', methods=['POST'])
-def post_pack():  # Note: Public grammar ID
+def post_pack():
     """
     Purpose: When the user posts a pack, we want to put it into the public.
 
@@ -331,7 +354,7 @@ def post_pack():  # Note: Public grammar ID
 
 
 @app.route('/api/Packs/<userId>', methods=['GET'])
-def get_packs(userId):  # Note: Public grammar ID
+def get_packs(userId):
     """
     Purpose: For a user to manage their own packs. See what packs they have created, and accept the
     money they have earned from it.
@@ -378,7 +401,7 @@ def get_packs(userId):  # Note: Public grammar ID
 
 
 @app.route('/api/Packs/<packId>/accept_coins', methods=['POST'])
-def accept_coins(packId):  # Note: Public grammar ID
+def accept_coins(packId):
     """
     Purpose: In the users' pack management, they can click a button and receive the coins for that pack.
 
@@ -393,7 +416,7 @@ def accept_coins(packId):  # Note: Public grammar ID
 
 
 @app.route('/api/Packs/<packId>', methods=['DELETE'])
-def delete_pack(packId):  # Note: Public grammar ID
+def delete_pack(packId):
     """
     Purpose: Delete a pack :(
 
@@ -408,7 +431,7 @@ def delete_pack(packId):  # Note: Public grammar ID
 
 
 @app.route('/api/Packs/Imported', methods=['GET'])
-def get_imported_packs():  # Note: Public grammar ID
+def get_imported_packs():
     """
     Purpose: The packs that the user has imported in the past (Store as a foreign key or something like that)
 
@@ -453,7 +476,7 @@ def get_imported_packs():  # Note: Public grammar ID
 
 
 @app.route('/api/Packs', methods=['GET'])
-def get_packs():  # Note: Public grammar ID
+def get_packs():
     """
     Purpose: See public popular or new packs
 
@@ -500,7 +523,7 @@ def get_packs():  # Note: Public grammar ID
 
 
 @app.route('/api/Packs/View/<packId>', methods=['GET'])
-def post_grammar(packId):  # Note: Public grammar ID
+def view_pack(packId):
     """
     Purpose: If the user wants to see a more detailed view of a pack, view it here.
     Possibly add info on the creator, I don't know.
@@ -540,8 +563,9 @@ def post_grammar(packId):  # Note: Public grammar ID
         'tags': ['Sports', 'Tech', 'Your Mom']
     })
 
-@app.route('/api/Packs/Import/<packId>', methods=['DELETE'])
-def delete_pack(packId):  # Note: Public grammar ID
+
+@app.route('/api/Packs/Import/<packId>', methods=['POST'])
+def import_pack(packId):
     """
     Purpose: Take all the words and grammars belonging to this pack, and add them to the user's library.
     Add the pack to the user's imported packs as well, and increase the earned and total coins of the pack.
@@ -556,6 +580,79 @@ def delete_pack(packId):  # Note: Public grammar ID
     # Return
     return json.dumps({'status': 'success'})
 
+
+if __name__ == '__main__':
+    app.run()
+
+
+@app.route('/api/Words/<word_id>/use', methods=['POST'])
+def use_word(word_id):
+    """
+    Purpose: When a user uses a word, we want to mark that it has been used, and
+    that the last used date was today. Recalculate the scores for spaced repitition.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    userId = request.get_json()['userId']
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+@app.route('api/Moderation/Words', methods=['GET', 'PUT', 'POST'])
+def moderation_manager(word_id):
+    """
+    Purpose: GET: Get all of the word changes that are in moderation.
+    POST: Make a new request for the moderators to view
+    PUT: Make a moderation decision. If approved, change the word accordingly.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    userId = request.get_json()['userId']
+
+    if request.method=="POST":
+        new_translation = request.get_json()['new_translation']
+        delete_translation = request.get_json()['delete_translation']
+    elif request.method=="GET":
+        max = request.get_json()['max']  # An int. How many are expected (for pagination)
+        start_index = request.get_json()['start_index']  # An int. What index to start on (for pagination)
+    else:
+        decision = request.get_json()['decision'] #True or False
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+
+@app.route('api/Moderation/Grammars', methods=['GET', 'PUT', 'POST'])
+def moderation_manager_grammar(word_id):
+    """
+    Purpose: GET: Get all of the grammar changes that are in moderation.
+    POST: Make a new request for the moderators to view
+    PUT: Make a moderation decision. If approved, change the word accordingly.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    userId = request.get_json()['userId']
+
+    if request.method=="POST":
+        new_link = request.get_json()['new_link']
+        remove_link = request.get_json()['remove_link']
+    elif request.method=="GET":
+        max = request.get_json()['max']  # An int. How many are expected (for pagination)
+        start_index = request.get_json()['start_index']  # An int. What index to start on (for pagination)
+    else:
+        decision = request.get_json()['decision'] #True or False
+    # Return
+    return json.dumps({'status': 'success'})
 
 if __name__ == '__main__':
     app.run()
