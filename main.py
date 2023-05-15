@@ -30,8 +30,8 @@ def breakdown_words(language_id, to_language_id):
     Frontend Implemented:
     """
     # PARAMETERS
-    sentence = request.get_json()['sentence']  # A string. The sentence to break down
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    sentence = request.args.get('sentence')  # A string. The sentence to break down
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
     # RETURN
     return json.dumps({
@@ -75,8 +75,8 @@ def breakdown_grammars(language_id, to_language_id):
     print("recieved")
     print(request.get_json())
     # Parameters
-    sentence = request.get_json()['sentence']  # A string. The sentence to break down
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    sentence = request.args.get('sentence')  # A string. The sentence to break down
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
     # RETURN
     return json.dumps({
@@ -114,8 +114,8 @@ def breakdown_analysis(language_id):
     """
 
     # Parameters
-    sentence = request.get_json()['sentence']  # A string. The sentence to break down
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    sentence = request.args.get('sentence')  # A string. The sentence to break down
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
     return json.dumps({
         'explaination': 'Basically, you\'re dumb'
@@ -135,10 +135,10 @@ def get_words(language_id):
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
     search = request.get_json['search']  # A string. Search base words
-    max = request.get_json()['max']  # An int. How many are expected (for pagination)
-    start_index = request.get_json()['start_index']  # An int. What index to start on (for pagination)
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
 
     # Returns userwords.
     return json.dumps([
@@ -175,7 +175,7 @@ def delete_word(user_word_id):
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
     # Return
     return json.dumps({'status': 'success'})
@@ -191,7 +191,7 @@ def post_word(word_id):  # Note: Public word ID
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
     # Return
     return json.dumps({'status': 'success'})
@@ -207,8 +207,8 @@ def post_words():
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
-    words = request.get_json()['words']  # A list of public word ids
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    words = request.args.get('words')  # A list of public word ids
 
     # Return
     # Returns userwords.
@@ -246,10 +246,10 @@ def get_grammars(language_id):
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
     search = request.get_json['search']  # A string. Search base words
-    max = request.get_json()['max']  # An int. How many are expected (for pagination)
-    start_index = request.get_json()['start_index']  # An int. What index to start on (for pagination)
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
 
     # Returns usergrammars.
     return json.dumps([
@@ -276,7 +276,7 @@ def get_grammars(language_id):
 
 
 @app.route('/api/Grammars/<user_grammar_id>', methods=['DELETE'])
-def delete_word(user_grammar_id):
+def delete_grammar(user_grammar_id):
     """
     Purpose: Delete a user grammar. Puts it into archive, which means we don't have to search it when getting lists
     of grammars
@@ -286,7 +286,7 @@ def delete_word(user_grammar_id):
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
     # Return
     return json.dumps({'status': 'success'})
@@ -302,7 +302,7 @@ def post_grammar(word_id):  # Note: Public grammar ID
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
     # Return
     return json.dumps({'status': 'success'})
@@ -318,13 +318,13 @@ def post_pack():  # Note: Public grammar ID
     """
 
     # Parameters
-    userId = request.get_json()['userId']  # Possibly taken care of by firebase
-    wordList = request.get_json()['wordList']  # List of Public word IDs
-    grammarList = request.get_json()['grammarList']  # List of Grammar IDs
-    description = request.get_json()['description']  # String: A basic description
-    link = request.get_json()['link']  # String: The link to where the words were found
-    level = request.get_json()['level']  # INT
-    tags = request.get_json()['tags']  # An array of strings. We might not even use this.
+    userId = request.args.get('userId')  # Possibly taken care of by firebase
+    wordList = request.args.get('wordList')  # List of Public word IDs
+    grammarList = request.args.get('grammarList')  # List of Grammar IDs
+    description = request.args.get('description')  # String: A basic description
+    link = request.args.get('link')  # String: The link to where the words were found
+    level = request.args.get('level')  # INT
+    tags = request.args.get('tags')  # An array of strings. We might not even use this.
 
     # Return
     return json.dumps({'status': 'success'})
@@ -341,8 +341,8 @@ def get_packs(userId):  # Note: Public grammar ID
     """
 
     # Parameters
-    max = request.get_json()['max']  # An int. How many are expected (for pagination)
-    startIndex = request.get_json()['startIndex']  # An int. What index to start on (for pagination)
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
 
     # Return
     return json.dumps([{
@@ -417,9 +417,9 @@ def get_imported_packs():  # Note: Public grammar ID
     """
 
     # Parameters
-    userId = request.get_json()['userId']  # Possibly taken care of by firebase
-    max = request.get_json()['max']  # An int. How many are expected (for pagination)
-    startIndex = request.get_json()['startIndex']  # An int. What index to start on (for pagination)
+    userId = request.args.get('userId')  # Possibly taken care of by firebase
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
 
     # Return
     return json.dumps([{
@@ -453,7 +453,7 @@ def get_imported_packs():  # Note: Public grammar ID
 
 
 @app.route('/api/Packs', methods=['GET'])
-def get_packs():  # Note: Public grammar ID
+def get_public_packs():  # Note: Public grammar ID
     """
     Purpose: See public popular or new packs
 
@@ -462,11 +462,11 @@ def get_packs():  # Note: Public grammar ID
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
-    tag = request.get_json()['tag']  # For searching by interests
-    level = request.get_json()['level']  # For searching by level
-    max = request.get_json()['max']  # An int. How many are expected (for pagination)
-    startIndex = request.get_json()['startIndex']  # An int. What index to start on (for pagination)
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    tag = request.args.get('tag')  # For searching by interests
+    level = request.args.get('level')  # For searching by level
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
 
     # Return
     return json.dumps([{
@@ -500,7 +500,7 @@ def get_packs():  # Note: Public grammar ID
 
 
 @app.route('/api/Packs/View/<packId>', methods=['GET'])
-def post_grammar(packId):  # Note: Public grammar ID
+def view_pack(packId):  # Note: Public grammar ID
     """
     Purpose: If the user wants to see a more detailed view of a pack, view it here.
     Possibly add info on the creator, I don't know.
@@ -510,7 +510,7 @@ def post_grammar(packId):  # Note: Public grammar ID
     """
 
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
     # Return
     return json.dumps({
@@ -539,22 +539,6 @@ def post_grammar(packId):  # Note: Public grammar ID
         },
         'tags': ['Sports', 'Tech', 'Your Mom']
     })
-
-@app.route('/api/Packs/Import/<packId>', methods=['DELETE'])
-def delete_pack(packId):  # Note: Public grammar ID
-    """
-    Purpose: Take all the words and grammars belonging to this pack, and add them to the user's library.
-    Add the pack to the user's imported packs as well, and increase the earned and total coins of the pack.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    userId = request.get_json()['userId']
-
-    # Return
-    return json.dumps({'status': 'success'})
 
 
 if __name__ == '__main__':
