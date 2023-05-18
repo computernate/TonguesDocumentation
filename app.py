@@ -17,6 +17,41 @@ I also also don't know what it expects for firebase's user stuff. I have it in t
 """
 
 
+@app.route('/api/Users/', methods=['POST'])
+def new_user():
+    return None
+
+@app.route('/api/Users/<email>', methods=['GET'])
+def get_user(email):
+    return {
+        'id': '12345',
+        'email': email,
+        'username': 'username',
+        'coins': 123,
+        'nativeLanguages':{
+
+        },
+        'learningLanguages':[{
+            'language':1,
+            'level':0,
+        }],
+        'gameBuckets':[{
+            'language':1,
+            'level':0,
+        }],
+        'wordModifier':5,
+        'allowedWords':20
+    }
+
+@app.route('/api/Users/<language_id>/addLearningLanguage', methods=['Put'])
+def user_learning(language_id):
+    return None
+
+@app.route('/api/Users/<language_id>/addNativeLanguage', methods=['Put'])
+def user_native(language_id):
+    return None
+
+
 @app.route('/api/Breakdown/Words/<lanugage_id>/<to_language_id>', methods=['POST'])
 def breakdown_words(language_id, to_language_id):
     """
@@ -320,12 +355,11 @@ def new_grammar(word_id):
     # Parameters
     user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
 
-    description = request.get_json()['description'] #Quick description
-    searchTerm = request.get_json()['searchTerm'] #Regex search
-    language = request.get_json()['language'] #Target Language
-    from_language = request.get_json()['from_language'] #Language of link
+    description = request.get_json()['description']  # Quick description
+    searchTerm = request.get_json()['searchTerm']  # Regex search
+    language = request.get_json()['language']  # Target Language
+    from_language = request.get_json()['from_language']  # Language of link
     link = request.get_json()['link']
-
 
     # Return
     return json.dumps({'status': 'success'})
@@ -602,7 +636,7 @@ def use_word(word_id):
     return json.dumps({'status': 'success'})
 
 
-@app.route('api/Moderation/Words', methods=['GET', 'PUT', 'POST'])
+@app.route('/api/Moderation/Words', methods=['GET', 'PUT', 'POST'])
 def moderation_manager(word_id):
     """
     Purpose: GET: Get all of the word changes that are in moderation.
@@ -616,20 +650,19 @@ def moderation_manager(word_id):
     # Parameters
     userId = request.get_json()['userId']
 
-    if request.method=="POST":
+    if request.method == "POST":
         new_translation = request.get_json()['new_translation']
         delete_translation = request.get_json()['delete_translation']
-    elif request.method=="GET":
+    elif request.method == "GET":
         max = request.get_json()['max']  # An int. How many are expected (for pagination)
         start_index = request.get_json()['start_index']  # An int. What index to start on (for pagination)
     else:
-        decision = request.get_json()['decision'] #True or False
+        decision = request.get_json()['decision']  # True or False
     # Return
     return json.dumps({'status': 'success'})
 
 
-
-@app.route('api/Moderation/Grammars', methods=['GET', 'PUT', 'POST'])
+@app.route('/api/Moderation/Grammars', methods=['GET', 'PUT', 'POST'])
 def moderation_manager_grammar(word_id):
     """
     Purpose: GET: Get all of the grammar changes that are in moderation.
@@ -643,16 +676,17 @@ def moderation_manager_grammar(word_id):
     # Parameters
     userId = request.get_json()['userId']
 
-    if request.method=="POST":
+    if request.method == "POST":
         new_link = request.get_json()['new_link']
         remove_link = request.get_json()['remove_link']
-    elif request.method=="GET":
+    elif request.method == "GET":
         max = request.get_json()['max']  # An int. How many are expected (for pagination)
         start_index = request.get_json()['start_index']  # An int. What index to start on (for pagination)
     else:
-        decision = request.get_json()['decision'] #True or False
+        decision = request.get_json()['decision']  # True or False
     # Return
     return json.dumps({'status': 'success'})
+
 
 if __name__ == '__main__':
     app.run()
