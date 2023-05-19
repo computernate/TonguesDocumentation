@@ -1,9 +1,3 @@
-from flask import Flask, request
-import json
-import datetime
-
-app = Flask(__name__)
-
 """
 Notes
 Each of these is an endpoint to be recreated on the C# server. Of course, they are just dummy endpoints for helping test
@@ -17,19 +11,25 @@ I also also don't know what it expects for firebase's user stuff. I have it in t
 """
 
 
-@app.route('/api/Users/', methods=['POST'])
-def new_user():
-    return None
+from collections import UserString
+from flask import Flask, request, jsonify
+import json
+import datetime
+import uuid
 
-@app.route('/api/Users/<email>', methods=['GET'])
-def get_user(email):
-    return {
-        'id': '12345',
-        'email': email,
-        'username': 'username',
+app = Flask(__name__)
+
+# start of auth code
+
+# USER object for testing
+USER = {
+        'id': 987,
+        'email': 'test@gmail.com',
+        'username': 'JoshuaOne',
         'coins': 123,
         'nativeLanguages':{
-
+            'language':2,
+            'level': 0
         },
         'learningLanguages':[{
             'language':1,
@@ -43,14 +43,154 @@ def get_user(email):
         'allowedWords':20
     }
 
-@app.route('/api/Users/<language_id>/addLearningLanguage', methods=['Put'])
+# array of users for testing
+USERS = [USER]
+
+# POSTS a user. Since the login form only deals with a user's id,email,and password those are the only values we
+# retrieve using request func
+@app.route('/api/Users/', methods=['POST'])
+def new_user():
+    output_object = {'status': 'success'}
+
+    post_data = request.get_json()
+    add_user = {
+        'id': post_data.get('id'),
+        'email': post_data.get('email'),
+        'username': post_data.get('username'),
+        'coins': 123,
+        'nativeLanguages':{
+            'language': 0,
+            'level': 0
+        },
+        'learningLanguages':[{
+            'language': 0,
+            'level':0,
+        }],
+        'gameBuckets':[{
+            'language':1,
+            'level':0,
+        }],
+        'wordModifier':5,
+        'allowedWords':20
+    }
+    # add user to the "database" of users
+    USERS.append(add_user)
+    output_object['message'] = 'User added'
+    return jsonify(output_object)
+
+@app.route('/api/Users/<email>', methods=['GET'])
+def get_user(email):
+    return {
+        'id': '12345',
+        'email': email,
+        'username': 'username',
+        'coins': 123,
+        'nativeLanguages':{
+        },
+        'learningLanguages':[{
+            'language':1,
+            'level':0,
+        }],
+        'gameBuckets':[{
+            'language':1,
+            'level':0,
+        }],
+        'wordModifier':5,
+        'allowedWords':20
+    }
+
+# helper method to see if USERS is updating
+@app.route('/api/all', methods=['GET'])
+def get_all():
+    return jsonify(USERS)
+
+# updates a user by grabbing their ID and removing that user, then replaces that user with a copy
+# of the user data that contains the updated language_id
+@app.route('/api/Users/<language_id>/addLearningLanguage', methods=['PUT'])
 def user_learning(language_id):
-    return None
+    output_object = {'status':'success'}
+    if request.method == "PUT":
+        post_data = request.get_json()
+        user_to_remove = post_data.get('id')
+        users_to_remove = []  # List to store users to be removed
+        for user in USERS:
+            if user["id"] == user_to_remove:
+                users_to_remove.append(user)
+                break  # Exit the loop after finding the user
+        # Remove the users from the USERS list
+        for user in users_to_remove:
+            USERS.remove(user)
+        put_user = {
+        'id': 567,
+        'email': post_data.get('email'),
+        'username': post_data.get('username'),
+        'coins': 123,
+        'nativeLanguages':{
+            'language': 0,
+            'level': 0
+        },
+        'learningLanguages':[{
+            'language': language_id,
+            'level':0,
+        }],
+        'gameBuckets':[{
+            'language':1,
+            'level':0,
+        }],
+        'wordModifier':5,
+        'allowedWords':20
+    }
+    USERS.append(put_user)
+    output_object['message'] = "User's language learning updated"
+    return jsonify(output_object)
 
-@app.route('/api/Users/<language_id>/addNativeLanguage', methods=['Put'])
+
+@app.route('/api/Users/<language_id>/addNativeLanguage', methods=['PUT'])
 def user_native(language_id):
-    return None
+    output_object = {'status':'success'}
+    if request.method == "PUT":
+        post_data = request.get_json()
 
+        user_to_remove = post_data('id')
+
+
+        put_user =  {
+        'id': uuid.uuid4().hex,
+        'email': post_data.get('email'),
+        'username': post_data.get('username'),
+        'coins': 123,
+        'nativeLanguages':{
+            'language': language_id,
+            'level': 0
+        },
+        'learningLanguages':[{
+            'language': 0,
+            'level':0,
+        }],
+        'gameBuckets':[{
+            'language':1,
+            'level':0,
+        }],
+        'wordModifier':5,
+        'allowedWords':20
+    }
+    USERS.append(put_user)
+    output_object['message'] = "User's language learning updated"
+    return jsonify(output_object)
+
+
+# end of auth code
+
+
+
+
+
+
+
+
+
+
+# start of library code
 
 @app.route('/api/Breakdown/Words/<lanugage_id>/<to_language_id>', methods=['POST'])
 def breakdown_words(language_id, to_language_id):
