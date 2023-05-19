@@ -16,8 +16,10 @@ from flask import Flask, request, jsonify
 import json
 import datetime
 import uuid
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:8080"}})
 
 # start of auth code
 
