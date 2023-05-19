@@ -150,12 +150,17 @@ def user_native(language_id):
     output_object = {'status':'success'}
     if request.method == "PUT":
         post_data = request.get_json()
-
-        user_to_remove = post_data('id')
-
-
+        user_to_remove = post_data.get('id')
+        users_to_remove = []  # List to store users to be removed
+        for user in USERS:
+            if user["id"] == user_to_remove:
+                users_to_remove.append(user)
+                break  # Exit the loop after finding the user
+        # Remove the users from the USERS list
+        for user in users_to_remove:
+            USERS.remove(user)
         put_user =  {
-        'id': uuid.uuid4().hex,
+        'id': 567,
         'email': post_data.get('email'),
         'username': post_data.get('username'),
         'coins': 123,
@@ -175,7 +180,7 @@ def user_native(language_id):
         'allowedWords':20
     }
     USERS.append(put_user)
-    output_object['message'] = "User's language learning updated"
+    output_object['message'] = "User's native language updated"
     return jsonify(output_object)
 
 
