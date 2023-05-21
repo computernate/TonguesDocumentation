@@ -1,8 +1,11 @@
 from flask import Flask, request
 import json
 import datetime
-
+from flask_cors import CORS, cross_origin
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 
 """
 Notes
@@ -18,19 +21,22 @@ I also also don't know what it expects for firebase's user stuff. I have it in t
 
 
 @app.route('/api/Users/', methods=['POST'])
+@cross_origin()
 def new_user():
     return None
 
 @app.route('/api/Users/<email>', methods=['GET'])
+@cross_origin()
 def get_user(email):
     return {
         'id': '12345',
         'email': email,
         'username': 'username',
         'coins': 123,
-        'nativeLanguages':{
-
-        },
+        'nativeLanguages':[{
+            'language':1,
+            'level':0,
+        }],
         'learningLanguages':[{
             'language':1,
             'level':0,
@@ -44,15 +50,18 @@ def get_user(email):
     }
 
 @app.route('/api/Users/<language_id>/addLearningLanguage', methods=['Put'])
+@cross_origin()
 def user_learning(language_id):
     return None
 
 @app.route('/api/Users/<language_id>/addNativeLanguage', methods=['Put'])
+@cross_origin()
 def user_native(language_id):
     return None
 
 
 @app.route('/api/Breakdown/Words/<lanugage_id>/<to_language_id>', methods=['POST'])
+@cross_origin()
 def breakdown_words(language_id, to_language_id):
     """
     Purpose: For a sentence, break into words and give info on each one including info about the users relationship to
@@ -92,6 +101,7 @@ def breakdown_words(language_id, to_language_id):
 
 
 @app.route('/api/Breakdown/Grammars/<language_id>/<to_language_id>', methods=['POST'])
+@cross_origin()
 def breakdown_grammars(language_id, to_language_id):
     """
     Purpose: The frontend will check the most popular 100 grammars. Each is just a regex, and that should be fairly
@@ -107,8 +117,6 @@ def breakdown_grammars(language_id, to_language_id):
     Backend Implemented:
     Frontend Implemented:
     """
-    print("recieved")
-    print(request.get_json())
     # Parameters
     sentence = request.args.get('sentence')  # A string. The sentence to break down
     user_id = request.args.get('user_id')  # Possibly taken care of by firebase
@@ -136,6 +144,7 @@ def breakdown_grammars(language_id, to_language_id):
 
 
 @app.route('/api/Breakdown/Analysis/<language_id>', methods=['POST'])
+@cross_origin()
 def breakdown_analysis(language_id):
     """
     Purpose: Not every grammar will be implemented because there are just so many that it could be infinate. If the user
@@ -160,6 +169,7 @@ def breakdown_analysis(language_id):
 
 
 @app.route('/api/Words/<language_id>/All', methods=['GET'])
+@cross_origin()
 def get_words(language_id):
     """
     Purpose: A user has a list of words that they are learning. Search allows us to search for specific text within
@@ -171,7 +181,7 @@ def get_words(language_id):
 
     # Parameters
     user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-    search = request.get_json['search']  # A string. Search base words
+    search = request.args.get('search')  # A string. Search base words
     max = request.args.get('max')  # An int. How many are expected (for pagination)
     start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
 
@@ -187,7 +197,7 @@ def get_words(language_id):
                 'word': 'Courir',
                 'language': 3,
                 'translations': [{
-                    'language': 0,
+                    'language': 1,
                     'translation': 'run'
                 }]
             },
@@ -200,6 +210,7 @@ def get_words(language_id):
 
 
 @app.route('/api/Words/<user_word_id>', methods=['DELETE'])
+@cross_origin()
 def delete_word(user_word_id):
     """
     Purpose: Delete a use word. Puts it into archive, which means we don't have to search it when getting lists
@@ -217,6 +228,7 @@ def delete_word(user_word_id):
 
 
 @app.route('/api/Words/<word_id>', methods=['POST'])
+@cross_origin()
 def post_word(word_id):  # Note: Public word ID
     """
     Purpose: If a user wants to add a word to their library, do so with the public word id.
@@ -232,8 +244,36 @@ def post_word(word_id):  # Note: Public word ID
     return json.dumps({'status': 'success'})
 
 
-@app.route('/api/Words/Multiple', methods=['POST'])
-def post_words():
+@app.route('/api/Words/Public/<language>', methods=['GET'])
+@cross_origin()
+def get_public_word(language):
+    """
+    Purpose: A user can search for a word and get the public word. For example, search will be "running" and
+    this function should return "run". In the backend, add any words that don't exist yet to our database.
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    search = request.args.get('search')  # This is the FORM. It is also an array of strings
+
+    # Return
+    return json.dumps([{
+        'id': '7589024758',  # The ID of the public word in mysql
+        'word': 'Courir',
+        'language': 3,
+        'translations': [{
+            'language': 1,
+            'translation': 'run'
+        }]
+    }])
+
+
+@app.route('/api/Words/<language>/Multiple', methods=['POST'])
+@cross_origin()
+def post_words(language):
     """
     Purpose: If a user wants to add a list of words to their library, do so with the public word ids.
 
@@ -271,6 +311,7 @@ def post_words():
 
 
 @app.route('/api/Grammars/<language_id>/All', methods=['GET'])
+@cross_origin()
 def get_grammars(language_id):
     """
     Purpose: A user has a list of grammars that they are learning. Search allows us to search for specific text within
@@ -282,7 +323,7 @@ def get_grammars(language_id):
 
     # Parameters
     user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-    search = request.get_json['search']  # A string. Search base words
+    search = request.args.get('search')  # A string. Search base words
     max = request.args.get('max')  # An int. How many are expected (for pagination)
     start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
 
@@ -311,6 +352,7 @@ def get_grammars(language_id):
 
 
 @app.route('/api/Grammars/<user_grammar_id>', methods=['DELETE'])
+@cross_origin()
 def delete_grammar(user_grammar_id):
     """
     Purpose: Delete a user grammar. Puts it into archive, which means we don't have to search it when getting lists
@@ -328,6 +370,7 @@ def delete_grammar(user_grammar_id):
 
 
 @app.route('/api/Grammars/<grammar_id>', methods=['POST'])
+@cross_origin()
 def post_grammar(word_id):
     """
     Purpose: If a user wants to add a word to their library, do so with the public word id.
@@ -344,6 +387,7 @@ def post_grammar(word_id):
 
 
 @app.route('/api/Grammars/', methods=['POST'])
+@cross_origin()
 def new_grammar(word_id):
     """
     Purpose: Create a new grammar. This should be added to the users' grammar, as well as
@@ -353,19 +397,20 @@ def new_grammar(word_id):
     Frontend Implemented:
     """
     # Parameters
-    user_id = request.get_json()['user_id']  # Possibly taken care of by firebase
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
 
-    description = request.get_json()['description']  # Quick description
-    searchTerm = request.get_json()['searchTerm']  # Regex search
-    language = request.get_json()['language']  # Target Language
-    from_language = request.get_json()['from_language']  # Language of link
-    link = request.get_json()['link']
+    description = request.args.get('description')  # Quick description
+    searchTerm = request.args.get('searchTerm')  # Regex search
+    language = request.args.get('language')  # Target Language
+    from_language = request.args.get('from_language')  # Language of link
+    link = request.args.get('link')
 
     # Return
     return json.dumps({'status': 'success'})
 
 
 @app.route('/api/Packs', methods=['POST'])
+@cross_origin()
 def post_pack():
     """
     Purpose: When the user posts a pack, we want to put it into the public.
@@ -388,6 +433,7 @@ def post_pack():
 
 
 @app.route('/api/Packs/<userId>', methods=['GET'])
+@cross_origin()
 def get_packs(userId):
     """
     Purpose: For a user to manage their own packs. See what packs they have created, and accept the
@@ -435,6 +481,7 @@ def get_packs(userId):
 
 
 @app.route('/api/Packs/<packId>/accept_coins', methods=['POST'])
+@cross_origin()
 def accept_coins(packId):
     """
     Purpose: In the users' pack management, they can click a button and receive the coins for that pack.
@@ -450,6 +497,7 @@ def accept_coins(packId):
 
 
 @app.route('/api/Packs/<packId>', methods=['DELETE'])
+@cross_origin()
 def delete_pack(packId):
     """
     Purpose: Delete a pack :(
@@ -465,6 +513,7 @@ def delete_pack(packId):
 
 
 @app.route('/api/Packs/Imported', methods=['GET'])
+@cross_origin()
 def get_imported_packs():
     """
     Purpose: The packs that the user has imported in the past (Store as a foreign key or something like that)
@@ -510,6 +559,7 @@ def get_imported_packs():
 
 
 @app.route('/api/Packs', methods=['GET'])
+@cross_origin()
 def get_public_packs():  # Note: Public grammar ID
     """
     Purpose: See public popular or new packs
@@ -557,6 +607,7 @@ def get_public_packs():  # Note: Public grammar ID
 
 
 @app.route('/api/Packs/View/<packId>', methods=['GET'])
+@cross_origin()
 def view_pack(packId):  # Note: Public grammar ID
     """
     Purpose: If the user wants to see a more detailed view of a pack, view it here.
@@ -599,6 +650,7 @@ def view_pack(packId):  # Note: Public grammar ID
 
 
 @app.route('/api/Packs/Import/<packId>', methods=['POST'])
+@cross_origin()
 def import_pack(packId):
     """
     Purpose: Take all the words and grammars belonging to this pack, and add them to the user's library.
@@ -609,7 +661,7 @@ def import_pack(packId):
     """
 
     # Parameters
-    userId = request.get_json()['userId']
+    userId = request.args.get('userId')
 
     # Return
     return json.dumps({'status': 'success'})
@@ -620,6 +672,7 @@ if __name__ == '__main__':
 
 
 @app.route('/api/Words/<word_id>/use', methods=['POST'])
+@cross_origin()
 def use_word(word_id):
     """
     Purpose: When a user uses a word, we want to mark that it has been used, and
@@ -630,13 +683,14 @@ def use_word(word_id):
     """
 
     # Parameters
-    userId = request.get_json()['userId']
+    userId = request.args.get('userId')
 
     # Return
     return json.dumps({'status': 'success'})
 
 
 @app.route('/api/Moderation/Words', methods=['GET', 'PUT', 'POST'])
+@cross_origin()
 def moderation_manager(word_id):
     """
     Purpose: GET: Get all of the word changes that are in moderation.
@@ -648,21 +702,22 @@ def moderation_manager(word_id):
     """
 
     # Parameters
-    userId = request.get_json()['userId']
+    userId = request.args.get('userId')
 
     if request.method == "POST":
-        new_translation = request.get_json()['new_translation']
-        delete_translation = request.get_json()['delete_translation']
+        new_translation = request.args.get('new_translation')
+        delete_translation = request.args.get('delete_translation')
     elif request.method == "GET":
-        max = request.get_json()['max']  # An int. How many are expected (for pagination)
-        start_index = request.get_json()['start_index']  # An int. What index to start on (for pagination)
+        max = request.args.get('max')  # An int. How many are expected (for pagination)
+        start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
     else:
-        decision = request.get_json()['decision']  # True or False
+        decision = request.args.get('decision')  # True or False
     # Return
     return json.dumps({'status': 'success'})
 
 
 @app.route('/api/Moderation/Grammars', methods=['GET', 'PUT', 'POST'])
+@cross_origin()
 def moderation_manager_grammar(word_id):
     """
     Purpose: GET: Get all of the grammar changes that are in moderation.
@@ -674,16 +729,16 @@ def moderation_manager_grammar(word_id):
     """
 
     # Parameters
-    userId = request.get_json()['userId']
+    userId = request.args.get('userId')
 
     if request.method == "POST":
-        new_link = request.get_json()['new_link']
-        remove_link = request.get_json()['remove_link']
+        new_link = request.args.get('new_link')
+        remove_link = request.args.get('remove_link')
     elif request.method == "GET":
-        max = request.get_json()['max']  # An int. How many are expected (for pagination)
-        start_index = request.get_json()['start_index']  # An int. What index to start on (for pagination)
+        max = request.args.get('max')  # An int. How many are expected (for pagination)
+        start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
     else:
-        decision = request.get_json()['decision']  # True or False
+        decision = request.args.get('decision')  # True or False
     # Return
     return json.dumps({'status': 'success'})
 
