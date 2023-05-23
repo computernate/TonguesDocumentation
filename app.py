@@ -747,10 +747,6 @@ def moderation_manager_grammar(word_id):
 def homepage():
     return "<h1>The server is working (API)</h1>"
 
-@app.route('/')
-@cross_origin()
-def homepage():
-    return "<h1>The server is working (ROOT)</h1>"
 
 if __name__ == '__main__':
     app.run()
