@@ -244,7 +244,7 @@ def get_words(language_id):
         'lastUsed': current_date,  # I don't know how this will actually show up.
         'archived': False
     }
-    WORDS = [WORD3, WORD2, WORD1]
+    WORDS = [WORD3, WORD2, WORD1, WORD3, WORD2]
     return json.dumps(WORDS)
 
 @app.route('/api/Words/<user_word_id>', methods=['PUT'])
