@@ -40,6 +40,15 @@ def get_user(email):
         'learningLanguages':[{
             'language':1,
             'level':0,
+            'xp':0,
+        },{
+            'language':2,
+            'level':0,
+            'xp':0,
+        },{
+            'language':3,
+            'level':0,
+            'xp':0,
         }],
         'gameBuckets':[{
             'language':1,
@@ -186,8 +195,7 @@ def get_words(language_id):
     start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
 
     # Returns userwords.
-    return json.dumps([
-        {
+    word = {
             'id': '57284305',  # The ID in mysql. This should be used to reference the word in the future.
             'publicId': '7589024758',  # The ID of the public word in mysql
             # Here, I would like to join the user word with the public word data. However, I don't know
@@ -206,7 +214,8 @@ def get_words(language_id):
             'lastUsed': 'datetime_object',  # I don't know how this will actually show up.
             'archived': False
         }
-    ])
+    #Put many in this array for frontend testing
+    return json.dumps([word, word, word, word, word, word, word, word,word, word, word, word, word, word, word, word])
 
 
 @app.route('/api/Words/<user_word_id>', methods=['DELETE'])
