@@ -30,8 +30,8 @@ def same_object(o1, o2):
 #####################################################
 def test_can_call_endpoint():
     r = requests.get(ENDPOINT + '/api')
-    #We don't have something like this on the server
-    #assert r.status_code == 200
+    # We don't have something like this on the server
+    # assert r.status_code == 200
     assert True
 
 
@@ -65,15 +65,17 @@ def test_use_coin():
     test_r = json.loads(requests.get(ENDPOINT + '/api/Users/test1234@test.test').text)
     assert test_r['coins'] == 95
 
+
 def test_add_user_learning():
-    language = {
+    lang = {
         'Language': 1,
         'Level': 0
     }
-    create_r = requests.put(ENDPOINT + '/api/Users/' + test_user_id + '/addLearningLanguage', json=language)
+    create_r = requests.put(ENDPOINT + '/api/Users/' + test_user_id + '/addLearningLanguage', json=lang)
     assert 200 <= create_r.status_code <= 299
     test_r = json.loads(requests.get(ENDPOINT + '/api/Users/test1234@test.test').text)
-    assert next((True for language in test_r['learningLanguages'] if language['language'] == 1), False)
+    has_language = len([language for language in test_r['learningLanguages'] if language['language'] == 1])
+    assert has_language > 0
 
 
 def test_add_user_native():
@@ -84,28 +86,134 @@ def test_add_user_native():
     create_r = requests.put(ENDPOINT + '/api/Users/' + test_user_id + '/addNativeLanguage', json=language)
     assert 200 <= create_r.status_code <= 299
     test_r = json.loads(requests.get(ENDPOINT + '/api/Users/test1234@test.test').text)
-    assert next((True for language in test_r['nativeLanguages'] if language['language'] == 2), False)
-
+    has_language = len([language for language in test_r['nativeLanguages'] if language['language'] == 2])
+    assert has_language > 0
 
 
 #####################################################
 #          Word Functions                           #
+# Currently tests only french. These should be updated with each new lemmetizer
 #####################################################
-
-def get_public_word():
-    pass
-
-
-def post_word():
-    pass
+test_word_id = ''
+test_word_id2 = ''
+test_word_id3 = ''
 
 
-def post_words():
-    pass
+def test_get_public_word():
+    global test_word_id
+    data = {'Search': 'courir'}
+    test_r = requests.get(ENDPOINT + '/api/Words/Public/2', json=data)
+    assert 200 <= test_r.status_code <= 299
+    obj = json.loads(test_r.text)
+    assert obj[0]['word'] == 'Courir'
+    assert obj[0]['language'] == 2
+    assert [translation for translation in obj[0]['translations'] if translation.language == 1][0] == 'run'
+    data = {'Search': 'couru'}
+    test_r = requests.get(ENDPOINT + '/api/Words/Public/2', json=data)
+    assert 200 <= test_r.status_code <= 299
+    obj = json.loads(test_r.text)
+    assert obj[0]['word'] == 'Courir'
+    assert obj[0]['language'] == 2
+    assert [translation for translation in obj[0]['translations'] if translation.language == 1][0] == 'run'
+    test_word_id = obj[0]['id']
 
+
+def test_post_word():
+    data = {
+        'userId': test_user_id,
+        'wordId': test_word_id
+    }
+    create_r = requests.post('/api/Words/2', json=data)
+    assert 200 <= create_r.status_code <= 299
+    get_r = requests.get('/api/Words/2/All', json={'userId': test_user_id})
+    assert 200 <= get_r.status_code <= 299
+    get_data = json.loads(get_r.text)
+    my_word = [data for data in get_data if data['publicWord']['word'] == 'Courir'][0]
+    assert len(my_word) == 1
+
+
+def test_post_same_word_multiple_times():
+    data = {
+        'userId': test_user_id,
+        'wordId': test_word_id
+    }
+    create_r = requests.post('/api/Words/2', json=data)
+    create_r = requests.post('/api/Words/2', json=data)
+    create_r = requests.post('/api/Words/2', json=data)
+    create_r = requests.post('/api/Words/2', json=data)
+    get_r = requests.get('/api/Words/2/All', json={'userId': test_user_id})
+    assert 200 <= get_r.status_code <= 299
+    get_data = json.loads(get_r.text)
+    my_word = [data for data in get_data if data['publicWord']['word'] == 'Courir'][0]
+    assert len(my_word) == 1
+
+
+def test_post_words():
+    global test_word_id2
+    global test_word_id3
+    data = {'Search': 'chercher'}
+    word_1 = json.loads(requests.get(ENDPOINT + '/api/Words/Public/2', json=data).text)
+    data = {'Search': 'courir'}
+    word_2 = json.loads(requests.get(ENDPOINT + '/api/Words/Public/2', json=data).text)
+    data = {'Search': 'pouvoir'}
+    word_3 = json.loads(requests.get(ENDPOINT + '/api/Words/Public/2', json=data).text)
+    test_word_id2=word_2['id']
+    test_word_id3=word_3['id']
+    all_words = [word_1['id'], word_2['id'], word_3['id'], word_3['id']]
+    data = {
+        'userId': test_user_id,
+        'words': all_words
+    }
+    create_response = requests.post('/api/Words/2/Multiple', json=data)
+    assert 200 <= create_response.status_code <= 299
+    get_r = json.loads(requests.get('/api/Words/2', json={'userId': test_user_id}).text)
+    my_word = [data for data in get_r if data['publicWord']['word'] == 'Chercher'][0]
+    assert len(my_word) == 1
+    my_word = [data for data in get_r if data['publicWord']['word'] == 'Courir'][0]
+    assert len(my_word) == 1
+    my_word = [data for data in get_r if data['publicWord']['word'] == 'Pouvoir'][0]
+    assert len(my_word) == 1
+
+
+def test_delete_word():
+    data = {
+        'userId': test_user_id,
+        'wordId': test_word_id
+    }
+    create_r = requests.delete('/api/Words/2', json=data)
+    assert 200 <= create_r.status_code <= 299
+    get_r = requests.get('/api/Words/2/All', json={'userId': test_user_id})
+    assert 200 <= get_r.status_code <= 299
+    get_data = json.loads(get_r.text)
+    my_word = [data for data in get_data if data['publicWord']['word'] == 'Courir'][0]
+    assert len(my_word) == 1
+    assert my_word['archived'] == True
 
 def delete_word():
-    pass
+    data = {
+        'userId': test_user_id,
+        'wordId': test_word_id
+    }
+    create_r = requests.delete('/api/Words/2', json=data)
+    assert 200 <= create_r.status_code <= 299
+    get_r = requests.get('/api/Words/2/All', json={'userId': test_user_id})
+    assert 200 <= get_r.status_code <= 299
+    get_data = json.loads(get_r.text)
+    my_word = [data for data in get_data if data['publicWord']['word'] == 'Courir'][0]
+    assert len(my_word) == 0
+
+def delete_words():
+    data = {
+        'userId': test_user_id,
+        'wordIds': [test_word_id2, test_word_id3]
+    }
+    create_r = requests.delete('/api/Words/2', json=data)
+    assert 200 <= create_r.status_code <= 299
+    get_r = requests.get('/api/Words/2/All', json={'userId': test_user_id})
+    assert 200 <= get_r.status_code <= 299
+    get_data = json.loads(get_r.text)
+    my_word = [data for data in get_data if data['publicWord']['word'] == 'Pouvoir'][0]
+    assert len(my_word) == 0
 
 
 #####################################################
@@ -163,4 +271,4 @@ def delete_pack():
 #          Cleanup                                  #
 #####################################################
 def test_delete_user():
-    r = requests.delete(ENDPOINT + '/api/Users/'+test_user_id)
+    r = requests.delete(ENDPOINT + '/api/Users/' + test_user_id)

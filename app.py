@@ -108,6 +108,8 @@ def get_words(language_id):
     user_id = request.args.get('user_id')  # Possibly taken care of by firebase
     search = request.args.get('search')  # A string. Search base words
     max = request.args.get('max')  # An int. How many are expected (for pagination)
+    if not max:
+        max=20
     start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
 
     # Returns userwords.
@@ -130,13 +132,16 @@ def get_words(language_id):
             'lastUsed': 'datetime_object',  # I don't know how this will actually show up.
             'archived': False
         }
+    print(start_index)
     #Put many in this array for frontend testing
-    return json.dumps([word, word, word, word, word, word, word, word,word, word, word, word, word, word, word, word])
+    if not start_index or int(start_index) <= 100:
+        return json.dumps([word for i in range(0, int(max))])
+    return json.dumps([])
 
 
-@app.route('/api/Words/<user_word_id>', methods=['DELETE'])
+@app.route('/api/Words/<language_id>', methods=['DELETE'])
 @cross_origin()
-def delete_word(user_word_id):
+def delete_word(language_id):
     """
     Purpose: Delete a use word. Puts it into archive, which means we don't have to search it when getting lists
     of words
@@ -147,14 +152,33 @@ def delete_word(user_word_id):
 
     # Parameters
     user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    word_id = request.args.get('wordId') # The USER ID of the word
 
     # Return
     return json.dumps({'status': 'success'})
 
 
-@app.route('/api/Words/<word_id>', methods=['POST'])
+@app.route('/api/Words/<language_id>/Multiple', methods=['DELETE'])
 @cross_origin()
-def post_word(word_id):  # Note: Public word ID
+def delete_words(language_id):
+    """
+    Purpose: Delete multiple words. Given user word ids, should set their archive to true
+    of words
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    word_ids = request.args.get('wordId') # A list of The USER ID of the words
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+@app.route('/api/Words/<language_id>', methods=['POST'])
+@cross_origin()
+def post_word(language_id):  # Note: Public word ID
     """
     Purpose: If a user wants to add a word to their library, do so with the public word id.
 
@@ -164,6 +188,7 @@ def post_word(word_id):  # Note: Public word ID
 
     # Parameters
     user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    wordId = request.args.get('wordId')
 
     # Return
     return json.dumps({'status': 'success'})
@@ -175,20 +200,21 @@ def get_public_word(language_id):
     """
     Purpose: A user can search for a word and get the public word. For example, search will be "running" and
     this function should return "run". In the backend, add any words that don't exist yet to our database.
+    Note. It returns an array. If I have a word like "cours" it can have multiple meanings. One being
+    "course" and one being the past tense of "courir." We should get both back in the array
 
     Backend Implemented: 4/24/23 (not reviewed)
     Frontend Implemented:
     """
 
     # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
     search = request.args.get('search')  # This is the FORM. It is also an array of strings
 
     # Return
     return json.dumps([{
         'id': '7589024758',  # The ID of the public word in mysql
         'word': 'Courir',
-        'language': 3,
+        'language': 2,
         'translations': [{
             'language': 1,
             'translation': 'run'
@@ -259,8 +285,7 @@ def get_grammars(language_id):
     start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
 
     # Returns usergrammars.
-    return json.dumps([
-        {
+    grammar={
             'id': '57284305',  # The ID in mysql. This should be used to reference the grammar in the future.
             'publicId': '7589024758',  # The ID of the public grammar in mysql
             # Here, I would like to join the user grammar with the public grammar data. However, I don't know
@@ -279,12 +304,14 @@ def get_grammars(language_id):
             'lastUsed': 'datetime_object',  # I don't know how this will actually show up.
             'archived': False
         }
-    ])
+    if not start_index or int(start_index) <= 100:
+        return json.dumps([grammar for i in range(0, int(max))])
+    return json.dumps([])
 
 
-@app.route('/api/Grammars/<user_grammar_id>', methods=['DELETE'])
+@app.route('/api/Grammars/<language_id>', methods=['DELETE'])
 @cross_origin()
-def delete_grammar(user_grammar_id):
+def delete_grammar(language_id):
     """
     Purpose: Delete a user grammar. Puts it into archive, which means we don't have to search it when getting lists
     of grammars
@@ -295,10 +322,28 @@ def delete_grammar(user_grammar_id):
 
     # Parameters
     user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    grammar_id = request.args.get('grammar_id') #The PUBLIC grammar ID
 
     # Return
     return json.dumps({'status': 'success'})
 
+@app.route('/api/Grammars/<language_id>/Multiple', methods=['DELETE'])
+@cross_origin()
+def delete_grammars(language_id):
+    """
+    Purpose: Delete a user grammar. Puts it into archive, which means we don't have to search it when getting lists
+    of grammars
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    grammar_ids = request.args.get('grammar_ids') # A list of PUBLIC grammar IDs to be archived
+
+    # Return
+    return json.dumps({'status': 'success'})
 
 @app.route('/api/Grammars/<grammar_id>', methods=['POST'])
 @cross_origin()
