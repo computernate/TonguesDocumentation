@@ -232,7 +232,7 @@ def get_words(language_id):
         # what that will look like with the json. This is just a guess.
         'publicWord': {
             'id': '7779024758',  # The ID of the public word in mysql
-            'word': 'Coup',
+            'word': 'CoupCoupCoup',
             'language': 3,
             'translations': [{
                 'language': 1,
@@ -244,7 +244,7 @@ def get_words(language_id):
         'lastUsed': current_date,  # I don't know how this will actually show up.
         'archived': False
     }
-    WORDS = [WORD3, WORD2, WORD1, WORD3, WORD2]
+    WORDS = [WORD3, WORD2, WORD1, WORD2, WORD2, WORD2, WORD2, WORD2, WORD2]
     return json.dumps(WORDS)
 
 @app.route('/api/Words/<user_word_id>', methods=['PUT'])
@@ -522,10 +522,10 @@ def get_packs(userId):
     startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
 
     # Return
-    return json.dumps([{
+    PACK1 = {
         'id': '5728903457',  # The ID
         'level': 6,
-        'description': 'blah blah blah',
+        'description': 'desc for my packs',
         'link': 'https://example.com',
         'words': [{
             'id': '7589024758',  # The ID of the public word in mysql
@@ -549,9 +549,41 @@ def get_packs(userId):
         },
         'grammarLength': 3,
         'owedCoins': 125,  # Coins not yet recieved
-        'earnedCoins': 5000,  # All coins for this user
+        'earnedCoins': 500,  # All coins for this user
         'tags': ['Sports', 'Tech', 'Your Mom']
-    }])
+    }
+    PACK2 = {
+        'id': '7778903457',  # The ID
+        'level': 6,
+        'description': 'desc for my packs v2',
+        'link': 'https://example.com',
+        'words': [{
+            'id': '7589024758',  # The ID of the public word in mysql
+            'word': 'Courir',
+            'language': 3,
+            'translations': [{
+                'language': 0,
+                'translation': 'run'
+            }]
+        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
+        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
+        'publicGrammar': {
+            'id': '7589024758',  # The ID of the public grammar in mysql
+            'description': 'there once was',
+            'searchTerm': '/search with this regex/',
+            'language': 3,
+            'links': [{
+                'language': 3,
+                'link': 'https://example.com'
+            }]
+        },
+        'grammarLength': 5,
+        'owedCoins': 125,  # Coins not yet recieved
+        'earnedCoins': 5000,  # All coins for this user
+        'tags': ['Tech1', 'Tech', 'Coin']
+    }
+    PACKS = [PACK1, PACK2]
+    return json.dumps(PACKS);
 
 
 @app.route('/api/Packs/<packId>/accept_coins', methods=['POST'])
@@ -602,10 +634,10 @@ def get_imported_packs():
     startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
 
     # Return
-    return json.dumps([{
+    PACK1 = {
         'id': '5728903457',  # The ID
         'level': 6,
-        'description': 'blah blah blah',
+        'description': 'desc from imported',
         'link': 'https://example.com',
         'words': [{
             'id': '7589024758',  # The ID of the public word in mysql
@@ -629,7 +661,36 @@ def get_imported_packs():
         },
         'grammarLength': 3,
         'tags': ['Sports', 'Tech', 'Your Mom']
-    }])
+    }
+    PACK2 = {
+        'id': '7678903457',  # The ID
+        'level': 6,
+        'description': 'desc from imported v2',
+        'link': 'https://example.com',
+        'words': [{
+            'id': '7589024758',  # The ID of the public word in mysql
+            'word': 'Courir',
+            'language': 3,
+            'translations': [{
+                'language': 0,
+                'translation': 'run'
+            }]
+        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
+        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
+        'publicGrammar': {
+            'id': '7589024758',  # The ID of the public grammar in mysql
+            'description': 'there once was',
+            'searchTerm': '/search with this regex/',
+            'language': 3,
+            'links': [{
+                'language': 3,
+                'link': 'https://example.com'
+            }]
+        },
+        'grammarLength': 3,
+        'tags': ['Laptop', 'Tech1', 'Your Mom']
+    }
+    return json.dumps([PACK1, PACK2, PACK1, PACK2, PACK1])
 
 
 @app.route('/api/Packs', methods=['GET'])
@@ -653,7 +714,7 @@ def get_public_packs():  # Note: Public grammar ID
     return json.dumps([{
         'id': '5728903457',  # The ID
         'level': 6,
-        'description': 'blah blah blah',
+        'description': 'desc of popular pack',
         'link': 'https://example.com',
         'words': [{
             'id': '7589024758',  # The ID of the public word in mysql
@@ -698,7 +759,7 @@ def view_pack(packId):  # Note: Public grammar ID
     return json.dumps({
         'id': '5728903457',  # The ID
         'level': 6,
-        'description': 'blah blah blah',
+        'description': 'detailed view of pack',
         'link': 'https://example.com',
         'words': [{
             'id': '7589024758',  # The ID of the public word in mysql
