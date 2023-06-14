@@ -6,6 +6,8 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+global_imported_pack = None
+#for testing import pack stuff, delete later
 
 """
 Notes
@@ -20,19 +22,28 @@ I also also don't know what it expects for firebase's user stuff. I have it in t
 """
 
 
-@app.route('/api/Users/', methods=['POST'])
+#####################################################
+#          User Functions                           #
+#####################################################
+
+@app.route('/api/Users', methods=['POST'])
 @cross_origin()
 def new_user():
-    return None
+    return json.dumps({
+        'id': '1234568',
+        'email':'test1234@test.test',
+        'username':'TESTY BOI',
+        'coins':95
+    })
 
 @app.route('/api/Users/<email>', methods=['GET'])
 @cross_origin()
 def get_user(email):
     return {
-        'id': '12345',
+        'id': '123456789012345678901234',
         'email': email,
         'username': 'username',
-        'coins': 123,
+        'coins': 95,
         'nativeLanguages':[{
             'language':1,
             'level':0,
@@ -40,6 +51,15 @@ def get_user(email):
         'learningLanguages':[{
             'language':1,
             'level':0,
+            'xp':0,
+        },{
+            'language':2,
+            'level':0,
+            'xp':0,
+        },{
+            'language':3,
+            'level':0,
+            'xp':0,
         }],
         'gameBuckets':[{
             'language':1,
@@ -49,16 +69,616 @@ def get_user(email):
         'allowedWords':20
     }
 
-@app.route('/api/Users/<language_id>/addLearningLanguage', methods=['Put'])
+@app.route('/api/Users/<user_id>/addLearningLanguage', methods=['PUT'])
 @cross_origin()
-def user_learning(language_id):
-    return None
+def user_learning(user_id):
+    return json.dumps({'status': 'success'})
 
-@app.route('/api/Users/<language_id>/addNativeLanguage', methods=['Put'])
+@app.route('/api/Users/<user_id>/addNativeLanguage', methods=['PUT'])
 @cross_origin()
-def user_native(language_id):
-    return None
+def user_native(user_id):
+    return json.dumps({'status': 'success'})
 
+@app.route('/api/Users/<user_id>/setUsername', methods=['PUT'])
+@cross_origin()
+def set_username(user_id):
+    return json.dumps({'status': 'success'})
+
+@app.route('/api/Users/<user_id>/useCoin', methods=['PUT'])
+@cross_origin()
+def use_coin(user_id):
+    return json.dumps({'status': 'success'})
+
+
+#####################################################
+#          Word Functions                           #
+#####################################################
+
+
+@app.route('/api/Words/<language_id>/All', methods=['GET'])
+@cross_origin()
+def get_words(language_id):
+    """
+    Purpose: A user has a list of words that they are learning. Search allows us to search for specific text within
+    our list, and the max and start index are for pagination purposes so we don't get the whole thing at once.
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    search = request.args.get('search')  # A string. Search base words
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    if not max:
+        max=20
+    start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
+
+    # Returns userwords.
+    word = {
+            'id': '57284305',  # The ID in mysql. This should be used to reference the word in the future.
+            'publicId': '7589024758',  # The ID of the public word in mysql
+            # Here, I would like to join the user word with the public word data. However, I don't know
+            # what that will look like with the json. This is just a guess.
+            'publicWord': {
+                'id': '7589024758',  # The ID of the public word in mysql
+                'word': 'Courir',
+                'language': 3,
+                'translations': [{
+                    'language': 1,
+                    'translation': 'run'
+                }]
+            },
+            'word': 'run',
+            'timesUsed': 12,
+            'lastUsed': 'datetime_object',  # I don't know how this will actually show up.
+            'archived': False
+        }
+    print(start_index)
+    #Put many in this array for frontend testing
+    if not start_index or int(start_index) <= 100:
+        return json.dumps([word for i in range(0, int(max))])
+    return json.dumps([])
+
+
+@app.route('/api/Words/<language_id>', methods=['DELETE'])
+@cross_origin()
+def delete_word(language_id):
+    """
+    Purpose: Delete a use word. Puts it into archive, which means we don't have to search it when getting lists
+    of words
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    word_id = request.args.get('wordId') # The USER ID of the word
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+@app.route('/api/Words/<language_id>/Multiple', methods=['DELETE'])
+@cross_origin()
+def delete_words(language_id):
+    """
+    Purpose: Delete multiple words. Given user word ids, should set their archive to true
+    of words
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    word_ids = request.args.get('wordId') # A list of The USER ID of the words
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+@app.route('/api/Words/<language_id>', methods=['POST'])
+@cross_origin()
+def post_word(language_id):  # Note: Public word ID
+    """
+    Purpose: If a user wants to add a word to their library, do so with the public word id.
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    wordId = request.args.get('wordId')
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+@app.route('/api/Words/Public/<language_id>', methods=['GET'])
+@cross_origin()
+def get_public_word(language_id):
+    """
+    Purpose: A user can search for a word and get the public word. For example, search will be "running" and
+    this function should return "run". In the backend, add any words that don't exist yet to our database.
+    Note. It returns an array. If I have a word like "cours" it can have multiple meanings. One being
+    "course" and one being the past tense of "courir." We should get both back in the array
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    search = request.args.get('search')  # This is the FORM. It is also an array of strings
+
+    # Return
+    return json.dumps([{
+        'id': '7589024758',  # The ID of the public word in mysql
+        'word': 'Courir',
+        'language': 2,
+        'translations': [{
+            'language': 1,
+            'translation': 'run'
+        }]
+    }])
+
+
+@app.route('/api/Words/<language_id>/Multiple', methods=['POST'])
+@cross_origin()
+def post_words(language_id):
+    """
+    Purpose: If a user wants to add a list of words to their library, do so with the public word ids.
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    words = request.args.get('words')  # A list of public word ids
+
+    # Return
+    # Returns userwords.
+    return json.dumps([
+        {
+            'id': '57284305',  # The ID in mysql. This should be used to reference the word in the future.
+            'publicId': '7589024758',  # The ID of the public word in mysql
+            # Here, I would like to join the user word with the public word data. However, I don't know
+            # what that will look like with the json. This is just a guess.
+            'publicWord': {
+                'id': '7589024758',  # The ID of the public word in mysql
+                'word': 'Courir',
+                'language': 3,
+                'translations': [{
+                    'language': 0,
+                    'translation': 'run'
+                }]
+            },
+            'word': 'run',
+            'timesUsed': 0,
+            'lastUsed': -1,  # I don't know how this will actually show up.
+            'archived': False
+        }
+    ])
+
+
+
+
+#####################################################
+#          Grammar Functions                        #
+#####################################################
+
+@app.route('/api/Grammars/<language_id>/All', methods=['GET'])
+@cross_origin()
+def get_grammars(language_id):
+    """
+    Purpose: A user has a list of grammars that they are learning. Search allows us to search for specific text within
+    our descriptions, and the max and start index are for pagination purposes so we don't get the whole thing at once.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    search = request.args.get('search')  # A string. Search base words
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
+
+    # Returns usergrammars.
+    grammar={
+            'id': '57284305',  # The ID in mysql. This should be used to reference the grammar in the future.
+            'publicId': '7589024758',  # The ID of the public grammar in mysql
+            # Here, I would like to join the user grammar with the public grammar data. However, I don't know
+            # what that will look like with the json. This is just a guess.
+            'publicGrammar': {
+                'id': '7589024758',  # The ID of the public grammar in mysql
+                'description': 'there once was',
+                'searchTerm': '/search with this regex/',
+                'language': 3,
+                'links': [{
+                    'language': 3,
+                    'link': 'https://example.com'
+                }]
+            },
+            'timesUsed': 12,
+            'lastUsed': 'datetime_object',  # I don't know how this will actually show up.
+            'archived': False
+        }
+    if not start_index or int(start_index) <= 100:
+        return json.dumps([grammar for i in range(0, int(max))])
+    return json.dumps([])
+
+
+@app.route('/api/Grammars/<language_id>', methods=['DELETE'])
+@cross_origin()
+def delete_grammar(language_id):
+    """
+    Purpose: Delete a user grammar. Puts it into archive, which means we don't have to search it when getting lists
+    of grammars
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    grammar_id = request.args.get('grammar_id') #The PUBLIC grammar ID
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+@app.route('/api/Grammars/<language_id>/Multiple', methods=['DELETE'])
+@cross_origin()
+def delete_grammars(language_id):
+    """
+    Purpose: Delete a user grammar. Puts it into archive, which means we don't have to search it when getting lists
+    of grammars
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    grammar_ids = request.args.get('grammar_ids') # A list of PUBLIC grammar IDs to be archived
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+@app.route('/api/Grammars/<grammar_id>', methods=['POST'])
+@cross_origin()
+def post_grammar(grammar):
+    """
+    Purpose: If a user wants to add a grammar to their library, do so with the public word id.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+@app.route('/api/Grammars/', methods=['POST'])
+@cross_origin()
+def new_grammar():
+    """
+    Purpose: Create a new grammar. This should be added to the users' grammar, as well as
+    go to the moderation system.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+
+    description = request.args.get('description')  # Quick description
+    searchTerm = request.args.get('searchTerm')  # Regex search
+    language = request.args.get('language')  # Target Language
+    from_language = request.args.get('from_language')  # Language of link
+    link = request.args.get('link')
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+
+
+#####################################################
+#            Packs Functions                        #
+#####################################################
+
+@app.route('/api/Packs', methods=['POST'])
+@cross_origin()
+def post_pack():
+    """
+    Purpose: When the user posts a pack, we want to put it into the public.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    userId = request.args.get('userId')  # Possibly taken care of by firebase
+    language=request.args.get('language')
+    wordList = request.args.get('wordList')  # List of Public word IDs
+    grammarList = request.args.get('grammarList')  # List of Grammar IDs
+    description = request.args.get('description')  # String: A basic description
+    link = request.args.get('link')  # String: The link to where the words were found
+    level = request.args.get('level')  # INT
+    tags = request.args.get('tags')  # An array of strings. We might not even use this.
+    url = request.args.get('url')  # A string
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+@app.route('/api/Packs/<userId>', methods=['GET'])
+@cross_origin()
+def get_packs(userId):
+    """
+    Purpose: For a user to manage their own packs. See what packs they have created, and accept the
+    money they have earned from it.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    userId = request.args.get('userId')  # Possibly taken care of by firebase
+    languageId = request.args.get('languageId')  #
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
+
+    PACK1 = {
+        'id': '5728903457',  # The ID
+        'level': 6,
+        'description': 'desc for my packs',
+        'link': 'https://example.com',
+        'words': [{
+            'id': '7589024758',  # The ID of the public word in mysql
+            'word': 'Courir',
+            'language': 3,
+            'translations': [{
+                'language': 0,
+                'translation': 'run'
+            }]
+        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
+        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
+        'publicGrammar': {
+            'id': '7589024758',  # The ID of the public grammar in mysql
+            'description': 'there once was',
+            'searchTerm': '/search with this regex/',
+            'language': 3,
+            'links': [{
+                'language': 3,
+                'link': 'https://example.com'
+            }]
+        },
+        'grammarLength': 3,
+        'owedCoins': 125,  # Coins not yet recieved
+        'earnedCoins': 500,  # All coins for this user
+        'tags': ['Sports', 'Tech', 'Your Mom']
+    }
+    PACK2 = {
+        'id': '7778903457',  # The ID
+        'level': 6,
+        'description': 'desc for my packs v2',
+        'link': 'https://example.com',
+        'words': [{
+            'id': '7589024758',  # The ID of the public word in mysql
+            'word': 'Courir',
+            'language': 3,
+            'translations': [{
+                'language': 0,
+                'translation': 'run'
+            }]
+        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
+        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
+        'publicGrammar': {
+            'id': '7589024758',  # The ID of the public grammar in mysql
+            'description': 'there once was',
+            'searchTerm': '/search with this regex/',
+            'language': 3,
+            'links': [{
+                'language': 3,
+                'link': 'https://example.com'
+            }]
+        },
+        'grammarLength': 5,
+        'owedCoins': 125,  # Coins not yet recieved
+        'earnedCoins': 5000,  # All coins for this user
+        'tags': ['Tech1', 'Tech', 'Coin']
+    }
+    PACKS = [PACK1, PACK2]
+    return json.dumps(PACKS);
+
+
+@app.route('/api/Packs/<pack_id>/accept_coins', methods=['POST'])
+@cross_origin()
+def accept_coins(pack_id):
+    """
+    Purpose: In the users' pack management, they can click a button and receive the coins for that pack.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+@app.route('/api/Packs/<packId>', methods=['DELETE'])
+@cross_origin()
+def delete_pack(packId):
+    """
+    Purpose: Delete a pack :(
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+
+    # Return
+    return json.dumps({'status': 'success'})
+
+
+@app.route('/api/Packs/Imported', methods=['GET'])
+@cross_origin()
+def get_imported_packs():
+    global global_imported_pack
+    if global_imported_pack is not None:
+        return json.dumps([global_imported_pack])
+    else:
+        return json.dumps([])
+
+@app.route('/api/Packs/Import/<packId>', methods=['POST'])
+@cross_origin()
+def import_pack(packId):
+    global global_imported_pack
+    # Parameters
+    userId = request.args.get('userId')
+
+    # Here, replace the description with the count (packId in this case)
+    global_imported_pack = {
+        'id': packId,
+        'level': 6,
+        'description': f'imported pack {packId}',
+        'link': 'https://example.com',
+        'words': [{
+            'id': '7589024758',  # The ID of the public word in mysql
+            'word': 'Courir',
+            'language': 3,
+            'translations': [{
+                'language': 0,
+                'translation': 'run'
+            }]
+        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
+        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
+        'publicGrammar': {
+            'id': '7589024758',  # The ID of the public grammar in mysql
+            'description': 'there once was',
+            'searchTerm': '/search with this regex/',
+            'language': 3,
+            'links': [{
+                'language': 3,
+                'link': 'https://example.com'
+            }]
+        },
+        'grammarLength': 5,
+        'owedCoins': 125,  # Coins not yet recieved
+        'earnedCoins': 5000,  # All coins for this user
+        'tags': ['Tech1', 'Tech', 'Coin']
+
+    }
+    return json.dumps(global_imported_pack)
+
+
+
+
+@app.route('/api/Packs', methods=['GET'])
+@cross_origin()
+def get_public_packs():  # Note: Public grammar ID
+    """
+    Purpose: See public popular or new packs
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    tag = request.args.get('tag')  # For searching by interests
+    level = request.args.get('level')  # For searching by level
+    max = request.args.get('max')  # An int. How many are expected (for pagination)
+    startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
+
+    # Return
+    return json.dumps([{
+        'id': '90909090',  # The ID
+        'level': 6,
+        'description': 'blah blah blah from public',
+        'link': 'https://example.com',
+        'words': [{
+            'id': '7589024758',  # The ID of the public word in mysql
+            'word': 'Courir',
+            'language': 3,
+            'translations': [{
+                'language': 0,
+                'translation': 'run'
+            }]
+        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
+        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
+        'publicGrammar': {
+            'id': '7589024758',  # The ID of the public grammar in mysql
+            'description': 'there once was',
+            'searchTerm': '/search with this regex/',
+            'language': 3,
+            'links': [{
+                'language': 3,
+                'link': 'https://example.com'
+            }]
+        },
+        'grammarLength': 3,
+        'tags': ['Sports', 'Tech', 'Your Mom']
+    }])
+
+
+@app.route('/api/Packs/View/<packId>', methods=['GET'])
+@cross_origin()
+def view_pack(packId):  # Note: Public grammar ID
+    """
+    Purpose: If the user wants to see a more detailed view of a pack, view it here.
+    Possibly add info on the creator, I don't know.
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+
+    # Return
+    return json.dumps({
+        'id': '5728903457',  # The ID
+        'level': 6,
+        'description': 'blah blah blah',
+        'link': 'https://example.com',
+        'words': [{
+            'id': '7589024758',  # The ID of the public word in mysql
+            'word': 'Courir',
+            'language': 3,
+            'translations': [{
+                'language': 0,
+                'translation': 'run'
+            }]
+        }],
+        'publicGrammar': {
+            'id': '7589024758',  # The ID of the public grammar in mysql
+            'description': 'there once was',
+            'searchTerm': '/search with this regex/',
+            'language': 3,
+            'links': [{
+                'language': 3,
+                'link': 'https://example.com'
+            }]
+        },
+        'tags': ['Sports', 'Tech', 'Your Mom']
+    })
+
+
+
+#####################################################
+#            breakdown Functions                    #
+#####################################################
 
 @app.route('/api/Breakdown/Words/<lanugage_id>/<to_language_id>', methods=['POST'])
 @cross_origin()
@@ -166,644 +786,6 @@ def breakdown_analysis(language_id):
         # We could do this if we go the chatGPT route. Otherwise, status:success and send it to a real person we hire
         # It might need to be reviewed by a real person anyways so we can be on top of new grammars
     })
-
-
-@app.route('/api/Words/<language_id>/All', methods=['GET'])
-@cross_origin()
-def get_words(language_id):
-    """
-    Purpose: A user has a list of words that they are learning. Search allows us to search for specific text within
-    our list, and the max and start index are for pagination purposes so we don't get the whole thing at once.
-
-    Backend Implemented: 4/24/23 (not reviewed)
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-    search = request.args.get('search')  # A string. Search base words
-    max = request.args.get('max')  # An int. How many are expected (for pagination)
-    start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
-
-    # Returns userwords.
-    current_date = datetime.datetime.now().isoformat()  # Get the current date and time as a string
-    WORD1 = {
-    'id': '57284305',  # The ID in mysql. This should be used to reference the word in the future.
-            'publicId': '7589024758',  # The ID of the public word in mysql
-            # Here, I would like to join the user word with the public word data. However, I don't know
-            # what that will look like with the json. This is just a guess.
-            'publicWord': {
-                'id': '7589024758',  # The ID of the public word in mysql
-                'word': 'Courir',
-                'language': 3,
-                'translations': [{
-                    'language': 1,
-                    'translation': 'run'
-                }]
-            },
-            'word': 'run',
-            'timesUsed': 12,
-            'lastUsed': current_date,  # I don't know how this will actually show up.
-            'archived': False
-    }
-    WORD2 = {
-        'id': '60282305',  # The ID in mysql. This should be used to reference the word in the future.
-        'publicId': '5559024758',  # The ID of the public word in mysql
-        # Here, I would like to join the user word with the public word data. However, I don't know
-        # what that will look like with the json. This is just a guess.
-        'publicWord': {
-            'id': '5559024758',  # The ID of the public word in mysql
-            'word': 'Manger',
-            'language': 3,
-            'translations': [{
-                'language': 1,
-                'translation': 'eat'
-            }]
-        },
-        'word': 'eat',
-        'timesUsed': 10,
-        'lastUsed': current_date,  # I don't know how this will actually show up.
-        'archived': False
-    }
-    WORD3 = {
-        'id': '77282305',  # The ID in mysql. This should be used to reference the word in the future.
-        'publicId': '7759024758',  # The ID of the public word in mysql
-        # Here, I would like to join the user word with the public word data. However, I don't know
-        # what that will look like with the json. This is just a guess.
-        'publicWord': {
-            'id': '7779024758',  # The ID of the public word in mysql
-            'word': 'CoupCoupCoup',
-            'language': 3,
-            'translations': [{
-                'language': 1,
-                'translation': 'kick'
-            }]
-        },
-        'word': 'kick',
-        'timesUsed': 1000,
-        'lastUsed': current_date,  # I don't know how this will actually show up.
-        'archived': False
-    }
-    WORDS = [WORD3, WORD2, WORD1, WORD2, WORD2, WORD2, WORD2, WORD2, WORD2]
-    return json.dumps(WORDS)
-
-@app.route('/api/Words/<user_word_id>', methods=['PUT'])
-@cross_origin()
-def put_time(user_word_id):
-    """
-    Puprose: In order to calculate when a user last used a word, we have to be able to store the date of when they last accessed
-    a word and perform some basic calculations with the current date in order to display the difference between when the word
-    was last accessed and when it is currently accessed
-
-    NOTE: I'm not 100% sure how multiple cards are going to be handled so for now I'm just going to implement this for CARD1
-    """
-
-@app.route('/api/Words/<user_word_id>', methods=['DELETE'])
-@cross_origin()
-def delete_word(user_word_id):
-    """
-    Purpose: Delete a use word. Puts it into archive, which means we don't have to search it when getting lists
-    of words
-
-    Backend Implemented: 4/24/23 (not reviewed)
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-
-    # Return
-    return json.dumps({'status': 'success'})
-
-
-@app.route('/api/Words/<word_id>', methods=['POST'])
-@cross_origin()
-def post_word(word_id):  # Note: Public word ID
-    """
-    Purpose: If a user wants to add a word to their library, do so with the public word id.
-
-    Backend Implemented: 4/24/23 (not reviewed)
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-
-    # Return
-    return json.dumps({'status': 'success'})
-
-
-@app.route('/api/Words/Public/<language>', methods=['GET'])
-@cross_origin()
-def get_public_word(language):
-    """
-    Purpose: A user can search for a word and get the public word. For example, search will be "running" and
-    this function should return "run". In the backend, add any words that don't exist yet to our database.
-
-    Backend Implemented: 4/24/23 (not reviewed)
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-    search = request.args.get('search')  # This is the FORM. It is also an array of strings
-
-    # Return
-    return json.dumps([{
-        'id': '7589024758',  # The ID of the public word in mysql
-        'word': 'Courir',
-        'language': 3,
-        'translations': [{
-            'language': 1,
-            'translation': 'run'
-        }]
-    }])
-
-
-@app.route('/api/Words/<language>/Multiple', methods=['POST'])
-@cross_origin()
-def post_words(language):
-    """
-    Purpose: If a user wants to add a list of words to their library, do so with the public word ids.
-
-    Backend Implemented: 4/24/23 (not reviewed)
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-    words = request.args.get('words')  # A list of public word ids
-
-    # Return
-    # Returns userwords.
-    return json.dumps([
-        {
-            'id': '57284305',  # The ID in mysql. This should be used to reference the word in the future.
-            'publicId': '7589024758',  # The ID of the public word in mysql
-            # Here, I would like to join the user word with the public word data. However, I don't know
-            # what that will look like with the json. This is just a guess.
-            'publicWord': {
-                'id': '7589024758',  # The ID of the public word in mysql
-                'word': 'Courir',
-                'language': 3,
-                'translations': [{
-                    'language': 0,
-                    'translation': 'run'
-                }]
-            },
-            'word': 'run',
-            'timesUsed': 0,
-            'lastUsed': -1,  # I don't know how this will actually show up.
-            'archived': False
-        }
-    ])
-
-
-@app.route('/api/Grammars/<language_id>/All', methods=['GET'])
-@cross_origin()
-def get_grammars(language_id):
-    """
-    Purpose: A user has a list of grammars that they are learning. Search allows us to search for specific text within
-    our descriptions, and the max and start index are for pagination purposes so we don't get the whole thing at once.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-    search = request.args.get('search')  # A string. Search base words
-    max = request.args.get('max')  # An int. How many are expected (for pagination)
-    start_index = request.args.get('start_index')  # An int. What index to start on (for pagination)
-
-    # Returns usergrammars.
-    GRAMMAR1 = {
-        'id': '57284305',  # The ID in mysql. This should be used to reference the grammar in the future.
-        'publicId': '7589024758',  # The ID of the public grammar in mysql
-        # Here, I would like to join the user grammar with the public grammar data. However, I don't know
-        # what that will look like with the json. This is just a guess.
-        'publicGrammar': {
-            'id': '7589024758',  # The ID of the public grammar in mysql
-            'description': 'there once was',
-            'searchTerm': '/search with this regex/',
-            'language': 3,
-            'links': [{
-                'language': 3,
-                'link': 'https://example.com'
-            }]
-        },
-        'timesUsed': 11,
-        'lastUsed': 'datetime_object',  # I don't know how this will actually show up.
-        'archived': False
-    }
-    GRAMMAR2 = {
-        'id': '66284305',  # The ID in mysql. This should be used to reference the grammar in the future.
-        'publicId': '7789024758',  # The ID of the public grammar in mysql
-        # Here, I would like to join the user grammar with the public grammar data. However, I don't know
-        # what that will look like with the json. This is just a guess.
-        'publicGrammar': {
-            'id': '7789024758',  # The ID of the public grammar in mysql
-            'description': 'once upon',
-            'searchTerm': '/search with this regex/',
-            'language': 3,
-            'links': [{
-                'language': 3,
-                'link': 'https://example.com'
-            },
-                {
-                    'language':3,
-                    'link': 'exampleTWO.com'
-                }
-            ]
-        },
-        'timesUsed': 1,
-        'lastUsed': 'datetime_object',  # I don't know how this will actually show up.
-        'archived': False
-    }
-    GRAMMARS = [GRAMMAR1, GRAMMAR2]
-    return json.dumps(GRAMMARS)
-
-
-@app.route('/api/Grammars/<user_grammar_id>', methods=['DELETE'])
-@cross_origin()
-def delete_grammar(user_grammar_id):
-    """
-    Purpose: Delete a user grammar. Puts it into archive, which means we don't have to search it when getting lists
-    of grammars
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-
-    # Return
-    # {'status': 'success'}
-    return json.dumps(user_grammar_id)
-
-
-@app.route('/api/Grammars/<grammar_id>', methods=['POST'])
-@cross_origin()
-def post_grammar(word_id):
-    """
-    Purpose: If a user wants to add a word to their library, do so with the public word id.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-
-    # Return
-    return json.dumps({'status': 'success'})
-
-
-@app.route('/api/Grammars/', methods=['POST'])
-@cross_origin()
-def new_grammar(word_id):
-    """
-    Purpose: Create a new grammar. This should be added to the users' grammar, as well as
-    go to the moderation system.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-
-    description = request.args.get('description')  # Quick description
-    searchTerm = request.args.get('searchTerm')  # Regex search
-    language = request.args.get('language')  # Target Language
-    from_language = request.args.get('from_language')  # Language of link
-    link = request.args.get('link')
-
-    # Return
-    return json.dumps({'status': 'success'})
-
-
-@app.route('/api/Packs', methods=['POST'])
-@cross_origin()
-def post_pack():
-    """
-    Purpose: When the user posts a pack, we want to put it into the public.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    userId = request.args.get('userId')  # Possibly taken care of by firebase
-    wordList = request.args.get('wordList')  # List of Public word IDs
-    grammarList = request.args.get('grammarList')  # List of Grammar IDs
-    description = request.args.get('description')  # String: A basic description
-    link = request.args.get('link')  # String: The link to where the words were found
-    level = request.args.get('level')  # INT
-    tags = request.args.get('tags')  # An array of strings. We might not even use this.
-
-    # Return
-    return json.dumps({'status': 'success'})
-
-
-@app.route('/api/Packs/<userId>', methods=['GET'])
-@cross_origin()
-def get_packs(userId):
-    """
-    Purpose: For a user to manage their own packs. See what packs they have created, and accept the
-    money they have earned from it.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    max = request.args.get('max')  # An int. How many are expected (for pagination)
-    startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
-
-    # Return
-    PACK1 = {
-        'id': '5728903457',  # The ID
-        'level': 6,
-        'description': 'desc for my packs',
-        'link': 'https://example.com',
-        'words': [{
-            'id': '7589024758',  # The ID of the public word in mysql
-            'word': 'Courir',
-            'language': 3,
-            'translations': [{
-                'language': 0,
-                'translation': 'run'
-            }]
-        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
-        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
-        'publicGrammar': {
-            'id': '7589024758',  # The ID of the public grammar in mysql
-            'description': 'there once was',
-            'searchTerm': '/search with this regex/',
-            'language': 3,
-            'links': [{
-                'language': 3,
-                'link': 'https://example.com'
-            }]
-        },
-        'grammarLength': 3,
-        'owedCoins': 125,  # Coins not yet recieved
-        'earnedCoins': 500,  # All coins for this user
-        'tags': ['Sports', 'Tech', 'Your Mom']
-    }
-    PACK2 = {
-        'id': '7778903457',  # The ID
-        'level': 6,
-        'description': 'desc for my packs v2',
-        'link': 'https://example.com',
-        'words': [{
-            'id': '7589024758',  # The ID of the public word in mysql
-            'word': 'Courir',
-            'language': 3,
-            'translations': [{
-                'language': 0,
-                'translation': 'run'
-            }]
-        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
-        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
-        'publicGrammar': {
-            'id': '7589024758',  # The ID of the public grammar in mysql
-            'description': 'there once was',
-            'searchTerm': '/search with this regex/',
-            'language': 3,
-            'links': [{
-                'language': 3,
-                'link': 'https://example.com'
-            }]
-        },
-        'grammarLength': 5,
-        'owedCoins': 125,  # Coins not yet recieved
-        'earnedCoins': 5000,  # All coins for this user
-        'tags': ['Tech1', 'Tech', 'Coin']
-    }
-    PACKS = [PACK1, PACK2]
-    return json.dumps(PACKS);
-
-
-@app.route('/api/Packs/<packId>/accept_coins', methods=['POST'])
-@cross_origin()
-def accept_coins(packId):
-    """
-    Purpose: In the users' pack management, they can click a button and receive the coins for that pack.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-
-    # Return
-    return json.dumps({'status': 'success'})
-
-
-@app.route('/api/Packs/<packId>', methods=['DELETE'])
-@cross_origin()
-def delete_pack(packId):
-    """
-    Purpose: Delete a pack :(
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-
-    # Return
-    return json.dumps({'status': 'success'})
-
-
-@app.route('/api/Packs/Imported', methods=['GET'])
-@cross_origin()
-def get_imported_packs():
-    """
-    Purpose: The packs that the user has imported in the past (Store as a foreign key or something like that)
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    userId = request.args.get('userId')  # Possibly taken care of by firebase
-    max = request.args.get('max')  # An int. How many are expected (for pagination)
-    startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
-
-    # Return
-    PACK1 = {
-        'id': '5728903457',  # The ID
-        'level': 6,
-        'description': 'desc from imported',
-        'link': 'https://example.com',
-        'words': [{
-            'id': '7589024758',  # The ID of the public word in mysql
-            'word': 'Courir',
-            'language': 3,
-            'translations': [{
-                'language': 0,
-                'translation': 'run'
-            }]
-        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
-        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
-        'publicGrammar': {
-            'id': '7589024758',  # The ID of the public grammar in mysql
-            'description': 'there once was',
-            'searchTerm': '/search with this regex/',
-            'language': 3,
-            'links': [{
-                'language': 3,
-                'link': 'https://example.com'
-            }]
-        },
-        'grammarLength': 3,
-        'tags': ['Sports', 'Tech', 'Your Mom']
-    }
-    PACK2 = {
-        'id': '7678903457',  # The ID
-        'level': 6,
-        'description': 'desc from imported v2',
-        'link': 'https://example.com',
-        'words': [{
-            'id': '7589024758',  # The ID of the public word in mysql
-            'word': 'Courir',
-            'language': 3,
-            'translations': [{
-                'language': 0,
-                'translation': 'run'
-            }]
-        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
-        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
-        'publicGrammar': {
-            'id': '7589024758',  # The ID of the public grammar in mysql
-            'description': 'there once was',
-            'searchTerm': '/search with this regex/',
-            'language': 3,
-            'links': [{
-                'language': 3,
-                'link': 'https://example.com'
-            }]
-        },
-        'grammarLength': 3,
-        'tags': ['Laptop', 'Tech1', 'Your Mom']
-    }
-    return json.dumps([PACK1, PACK2, PACK1, PACK2, PACK1])
-
-
-@app.route('/api/Packs', methods=['GET'])
-@cross_origin()
-def get_public_packs():  # Note: Public grammar ID
-    """
-    Purpose: See public popular or new packs
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-    tag = request.args.get('tag')  # For searching by interests
-    level = request.args.get('level')  # For searching by level
-    max = request.args.get('max')  # An int. How many are expected (for pagination)
-    startIndex = request.args.get('startIndex')  # An int. What index to start on (for pagination)
-
-    # Return
-    return json.dumps([{
-        'id': '5728903457',  # The ID
-        'level': 6,
-        'description': 'desc of popular pack',
-        'link': 'https://example.com',
-        'words': [{
-            'id': '7589024758',  # The ID of the public word in mysql
-            'word': 'Courir',
-            'language': 3,
-            'translations': [{
-                'language': 0,
-                'translation': 'run'
-            }]
-        }],  # These are the public words. Maybe just do the first 5 for efficiency, and see the rest on the detail page
-        'wordLength': 10,  # Only do this if we decide to just send the first 5 words
-        'publicGrammar': {
-            'id': '7589024758',  # The ID of the public grammar in mysql
-            'description': 'there once was',
-            'searchTerm': '/search with this regex/',
-            'language': 3,
-            'links': [{
-                'language': 3,
-                'link': 'https://example.com'
-            }]
-        },
-        'grammarLength': 3,
-        'tags': ['Sports', 'Tech', 'Your Mom']
-    }])
-
-
-@app.route('/api/Packs/View/<packId>', methods=['GET'])
-@cross_origin()
-def view_pack(packId):  # Note: Public grammar ID
-    """
-    Purpose: If the user wants to see a more detailed view of a pack, view it here.
-    Possibly add info on the creator, I don't know.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
-
-    # Return
-    return json.dumps({
-        'id': '5728903457',  # The ID
-        'level': 6,
-        'description': 'detailed view of pack',
-        'link': 'https://example.com',
-        'words': [{
-            'id': '7589024758',  # The ID of the public word in mysql
-            'word': 'Courir',
-            'language': 3,
-            'translations': [{
-                'language': 0,
-                'translation': 'run'
-            }]
-        }],
-        'publicGrammar': {
-            'id': '7589024758',  # The ID of the public grammar in mysql
-            'description': 'there once was',
-            'searchTerm': '/search with this regex/',
-            'language': 3,
-            'links': [{
-                'language': 3,
-                'link': 'https://example.com'
-            }]
-        },
-        'tags': ['Sports', 'Tech', 'Your Mom']
-    })
-
-
-@app.route('/api/Packs/Import/<packId>', methods=['POST'])
-@cross_origin()
-def import_pack(packId):
-    """
-    Purpose: Take all the words and grammars belonging to this pack, and add them to the user's library.
-    Add the pack to the user's imported packs as well, and increase the earned and total coins of the pack.
-
-    Backend Implemented:
-    Frontend Implemented:
-    """
-
-    # Parameters
-    userId = request.args.get('userId')
-
-    # Return
-    return json.dumps({'status': 'success'})
-
-
-if __name__ == '__main__':
-    app.run()
 
 
 @app.route('/api/Words/<word_id>/use', methods=['POST'])
