@@ -139,6 +139,59 @@ def get_words(language_id):
     return json.dumps([])
 
 
+@app.route('/api/Words/<word_id>/Detail', methods=['GET'])
+@cross_origin()
+def get_word_detail(word_id):
+    """
+    Purpose:
+
+    Backend Implemented:
+    Frontend Implemented:
+    """
+
+    # Parameters
+
+    # Returns public word.
+    notes = {
+        'note':'This can also mean run like a computer runs',
+        'said_by':'nateroskelley',
+        'upvotes':'123',
+        'downvotes':'2',
+        'language':1,
+        'id':'23647802'
+    }
+    word = {
+        'id': '7589024758',  # The ID of the public word in mysql
+        'word': 'Courir',
+        'language': 3,
+        'translations': [{
+            'language': 1,
+            'translation': 'run',
+            'details': 'To run like in a race'
+        },{
+            'language': 1,
+            'translation': 'race',
+            'details': 'Usually referring to the track to be run'
+        }],
+        'forms':[
+            {
+                'word':'corri',
+                'tags':['verb', 'present']
+            },
+            {
+                'word':'corru',
+                'tags':['verb', 'past']
+            },
+            {
+                'word':'corrient',
+                'tags':['verb', 'they-conjugation']
+            }
+        ],
+        'notes':[notes for i in range(20)]
+    }
+    return json.dumps(word)
+
+
 @app.route('/api/Words/<language_id>', methods=['DELETE'])
 @cross_origin()
 def delete_word(language_id):
@@ -261,8 +314,49 @@ def post_words(language_id):
     ])
 
 
+@app.route('/api/Words/<language_id>/AddNote', methods=['PUT'])
+@cross_origin()
+def post_note(language_id):
+    """
+    Purpose: A user can post a note to a word to clarify things
 
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
 
+    # Parameters
+    user_id = request.args.get('user_id')  # Possibly taken care of by firebase
+    wordId = request.args.get('wordId')  # A list of public word ids
+    note = request.args.get('note')  # A list of public word ids
+    return json.dumps({'status': 'success'})
+
+@app.route('/api/Words/<language_id>/UpvoteNote', methods=['PUT'])
+@cross_origin()
+def upvote_note(language_id):
+    """
+    Purpose: A user can post a note to a word to clarify things
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    note_id = request.args.get('note_id')
+    return json.dumps({'status': 'success'})
+
+@app.route('/api/Words/<language_id>/DownvoteNote', methods=['PUT'])
+@cross_origin()
+def downvote_note(language_id):
+    """
+    Purpose: A user can post a note to a word to clarify things
+
+    Backend Implemented: 4/24/23 (not reviewed)
+    Frontend Implemented:
+    """
+
+    # Parameters
+    note_id = request.args.get('note_id')
+    return json.dumps({'status': 'success'})
 #####################################################
 #          Grammar Functions                        #
 #####################################################

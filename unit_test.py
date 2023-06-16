@@ -97,6 +97,7 @@ def test_add_user_native():
 test_word_id = ''
 test_word_id2 = ''
 test_word_id3 = ''
+test_note_id = ''
 
 
 def test_get_public_word():
@@ -157,8 +158,8 @@ def test_post_words():
     word_2 = json.loads(requests.get(ENDPOINT + '/api/Words/Public/2', json=data).text)
     data = {'Search': 'pouvoir'}
     word_3 = json.loads(requests.get(ENDPOINT + '/api/Words/Public/2', json=data).text)
-    test_word_id2=word_2['id']
-    test_word_id3=word_3['id']
+    test_word_id2 = word_2['id']
+    test_word_id3 = word_3['id']
     all_words = [word_1['id'], word_2['id'], word_3['id'], word_3['id']]
     data = {
         'userId': test_user_id,
@@ -175,6 +176,43 @@ def test_post_words():
     assert len(my_word) == 1
 
 
+def test_word_note():
+    global test_word_id
+    global test_user_id
+    global test_note_id
+    data = {
+        'wordId': test_word_id,
+        'note': 'This word is actually pretty dumb',
+        'userId': test_user_id
+    }
+    note = requests.post(ENDPOINT + '/api/Words/2/AddNote', json=data)
+    assert 200 <= note.status_code <= 299
+
+    test_note_id = json.loads(note.text)
+    detail = requests.get(ENDPOINT+'/api/Words/'+test_note_id+'/Detail')
+    assert 200 <= detail.status_code <= 299
+    my_note = [data for data in json.loads(detail.text['notes']) if data['id'] == test_note_id][0]
+    assert len(my_note) == 1
+    assert my_note['note'] == 'This word is actually pretty dumb'
+    assert my_note['saidBy'] == 'TESTIER BOI'
+    assert my_note['upvotes'] == 0
+    assert my_note['downvotes'] == 0
+
+    data = {'noteId':test_note_id}
+    upvote = requests.put(ENDPOINT+'/api/Words/2/Detail',json=data)
+    assert upvote <= detail.status_code <= 299
+    my_note = [data for data in json.loads(detail.text['notes']) if data['id'] == test_note_id][0]
+    assert my_note['upvotes'] == 1
+    upvote = requests.put(ENDPOINT+'/api/Words/2/Detail',json=data)
+    assert upvote <= detail.status_code <= 299
+    my_note = [data for data in json.loads(detail.text['notes']) if data['id'] == test_note_id][0]
+    assert my_note['upvotes'] == 1
+
+
+
+
+
+
 def test_delete_word():
     data = {
         'userId': test_user_id,
@@ -189,27 +227,16 @@ def test_delete_word():
     assert len(my_word) == 1
     assert my_word['archived'] == True
 
-def delete_word():
-    data = {
-        'userId': test_user_id,
-        'wordId': test_word_id
-    }
-    create_r = requests.delete('/api/Words/2', json=data)
-    assert 200 <= create_r.status_code <= 299
-    get_r = requests.get('/api/Words/2/All', json={'userId': test_user_id})
-    assert 200 <= get_r.status_code <= 299
-    get_data = json.loads(get_r.text)
-    my_word = [data for data in get_data if data['publicWord']['word'] == 'Courir'][0]
-    assert len(my_word) == 0
 
-def delete_words():
+
+def test_delete_words():
     data = {
         'userId': test_user_id,
         'wordIds': [test_word_id2, test_word_id3]
     }
     create_r = requests.delete('/api/Words/2', json=data)
     assert 200 <= create_r.status_code <= 299
-    get_r = requests.get('/api/Words/2/All', json={'userId': test_user_id})
+    get_r = requests.get('/api/Words/2/Multiple', json={'userId': test_user_id})
     assert 200 <= get_r.status_code <= 299
     get_data = json.loads(get_r.text)
     my_word = [data for data in get_data if data['publicWord']['word'] == 'Pouvoir'][0]
