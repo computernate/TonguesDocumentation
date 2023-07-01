@@ -1,3 +1,6 @@
+import string
+from random import random
+
 import requests
 import json
 
@@ -42,7 +45,8 @@ def test_create_user():
     global test_user_id
     test_user_temp = {
         'Email': 'test1234@test.test',
-        'Username': 'TESTY BOI'
+        'Username': 'TESTY BOI',
+        'id':''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
     }
     r = requests.post(ENDPOINT + '/api/Users', json=test_user_temp)
     assert 200 <= r.status_code <= 299
